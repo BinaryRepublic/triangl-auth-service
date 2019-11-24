@@ -8,6 +8,7 @@ module.exports = {
   registerUser,
   verifyUserCredentials,
   generateAndStoreAuthorizationCode,
+  getUserByAuthorizationCodeAndDropCode,
   constructAuthorizationCodeRedirectUri
 };
 
@@ -47,8 +48,30 @@ async function generateAndStoreAuthorizationCode(userId) {
   return authorizationCode;
 }
 
-function constructAuthorizationCodeRedirectUri(redirect_uri, authorization_code, state) {
-  return `${redirect_uri}?authorization_code={authorization_code}&state={state}`
+async function getUserByAuthorizationCodeAndDropCode(authorizationCode) {
+  verifyAuthorizationCode(authorizationCode);
+  const user = await userRepository.getUserByAuthorizationCode(authorizationCode);
+  if (user === null) {
+    throw { statusCode: 400, message: 'invalid authorization_code' }
+  }
+  await userRepository.dropAuthorizationCodeForUser(user.id);
+
+  return user;
+}
+
+function verifyAuthorizationCode(authorizationCode) {
+  const json = Base64.decode(authorizationCode);
+  const authorizationCodeObj = JSON.parse(json);
+  const { expires } = authorizationCodeObj;
+
+  if (expires < new Date().toISOString()) {
+    // TODO throw { statusCode: 400, message: 'authorization_code is expired' }
+  }
+}
+
+function constructAuthorizationCodeRedirectUri(redirect_uri, authorization_code, state, response_type) {
+  return `${redirect_uri}?authorization_code={authorization_code}&state={state}&response_type={response_type}`
     .replace('{authorization_code}', encodeURIComponent(authorization_code))
     .replace('{state}', encodeURIComponent(state))
+    .replace('{response_type}', encodeURIComponent(response_type))
 }

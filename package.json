@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "dependencies": {
     "bcrypt": "^3.0.7",
+    "body-parser": "latest",
     "csprng": "^0.1.2",
     "express": "latest",
     "js-base64": "^2.5.1",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.2",
     "mysql": "^2.17.1",
-    "uuid": "latest",
-    "body-parser": "latest"
+    "s256": "^1.0.0",
+    "uuid": "latest"
   }
 }

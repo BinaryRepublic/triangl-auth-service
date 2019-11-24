@@ -13,6 +13,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const redirect_uri = urlParams.get('redirect_uri');
         const state = urlParams.get('state');
+        const response_type = urlParams.get('response_type');
+        const session_id = urlParams.get('session_id');
 
         const response = await fetch('/user/login', {
           method: 'POST',
@@ -28,7 +30,9 @@
             email,
             password,
             redirect_uri,
-            state
+            state,
+            response_type,
+            session_id
           })
         });
         if (response.status !== 200) {
