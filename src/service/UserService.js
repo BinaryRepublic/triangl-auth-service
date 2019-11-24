@@ -1,13 +1,14 @@
 const bcrypt = require('bcrypt');
 const rand = require('csprng');
-const base64 = require('js-base64');
+const { Base64 } = require('js-base64');
 
 const userRepository = require('../repository/UserRepository');
 
 module.exports = {
   registerUser,
   verifyUserCredentials,
-  generateAndStoreAuthorizationCode
+  generateAndStoreAuthorizationCode,
+  constructAuthorizationCodeRedirectUri
 };
 
 async function registerUser(email, password) {
@@ -40,7 +41,14 @@ async function generateAndStoreAuthorizationCode(userId) {
     secret: rand(160, 36),
     expires: expires.toISOString()
   };
-  const authorizationCode = base64.encode(JSON.stringify(authorizationCodeObj));
+  const authorizationCode = Base64.encode(JSON.stringify(authorizationCodeObj));
 
   await userRepository.storeAuthorizationCode(userId, authorizationCode);
+  return authorizationCode;
+}
+
+function constructAuthorizationCodeRedirectUri(redirect_uri, authorization_code, state) {
+  return `${redirect_uri}?authorization_code={authorization_code}&state={state}`
+    .replace('{authorization_code}', encodeURIComponent(authorization_code))
+    .replace('{state}', encodeURIComponent(state))
 }

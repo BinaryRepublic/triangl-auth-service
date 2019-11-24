@@ -15,13 +15,21 @@ router.post('/register', withErrorHandler(async (req, res) => {
   res.send()
 }));
 
-router.get('/login', withErrorHandler(async (req, res) => {
-  const userLoginDto = new UserLoginDto(req.query);
+router.post('/login', withErrorHandler(async (req, res) => {
+  const userLoginDto = new UserLoginDto(req.body);
 
   const user = await userService.verifyUserCredentials(userLoginDto.email, userLoginDto.password);
-  await userService.generateAndStoreAuthorizationCode(user.id);
+  const authorization_code = await userService.generateAndStoreAuthorizationCode(user.id);
 
-  res.send();
+  const redirect_uri = userService.constructAuthorizationCodeRedirectUri(
+    userLoginDto.redirect_uri,
+    authorization_code,
+    userLoginDto.state
+  );
+
+  res.send({
+    redirect_uri
+  });
 }));
 
 module.exports = router;

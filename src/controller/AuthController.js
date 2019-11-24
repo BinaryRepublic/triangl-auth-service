@@ -5,7 +5,7 @@ const { withErrorHandler } = require('../support/ErrorHandler');
 const AuthorizeDto = require('../dto/AuthorizeDto');
 const {
   storeCodeChallenge,
-  constructRedirectUri
+  constructUserLoginRedirectUri
 } = require('../service/AuthService');
 
 router.get('/authorize', withErrorHandler(async (req, res) => {
@@ -23,14 +23,12 @@ router.get('/authorize', withErrorHandler(async (req, res) => {
     code_challenge_method,
     state
   );
-  const redirectUri = constructRedirectUri(
+
+  res.redirect(constructUserLoginRedirectUri(
     state,
     response_type,
-    redirect_uri,
-    code_challenge
-  );
-
-  res.redirect(redirectUri);
+    redirect_uri
+  ));
 }));
 
 router.get('/token', withErrorHandler((req, res) => {

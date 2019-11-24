@@ -5,7 +5,7 @@ module.exports = {
   validateRedirectUri,
   storeCodeChallenge,
   validateResponseType,
-  constructRedirectUri
+  constructUserLoginRedirectUri
 };
 
 const RESPONSE_TYPES = ['code id_token'];
@@ -26,7 +26,7 @@ async function storeCodeChallenge(code_challenge, code_challenge_method, state) 
   await authRepository.storeAuthorizationRequest(code_challenge, code_challenge_method, state)
 }
 
-function constructRedirectUri(state, response_type, redirect_uri, code_challenge) {
+function constructUserLoginRedirectUri(state, response_type, redirect_uri, code_challenge) {
   return `${authConfig.baseUrl}/login?state={state}&response_type={response_type}&redirect_uri={redirect_uri}&code_challenge={code_challenge}`
     .replace('{state}', encodeURIComponent(state))
     .replace('{response_type}', encodeURIComponent(response_type))
@@ -34,6 +34,3 @@ function constructRedirectUri(state, response_type, redirect_uri, code_challenge
     .replace('{code_challenge}', encodeURIComponent(code_challenge))
 }
 
-async function storeUserIdAndAuthorizationCode(user_id, authorization_code) {
-  await authRepository.storeUserIdAndAuthorizationCode(user_id, authorization_code);
-}
