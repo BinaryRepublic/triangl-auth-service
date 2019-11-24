@@ -4,9 +4,9 @@ module.exports = {
 };
 
 function withErrorHandler(controllerHandler) {
-  return (req, res) => {
+  return async (req, res) => {
     try {
-      controllerHandler(req, res);
+      await controllerHandler(req, res);
     } catch (e) {
       if (e.statusCode) {
         res.status(e.statusCode);

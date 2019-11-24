@@ -1,7 +1,8 @@
+const uuidv4 = require('uuid/v4');
 const knex = require('../support/Knex');
 
 const TABLES = {
-  user_credential: 'user_credential'
+  auth: 'auth'
 };
 
 module.exports = {
@@ -9,7 +10,8 @@ module.exports = {
 };
 
 async function storeAuthorizationRequest(code_challenge, code_challenge_method, state) {
-  await knex(TABLES.user_credential).insert({
+  await knex(TABLES.auth).insert({
+    id: uuidv4(),
     code_challenge,
     code_challenge_method,
     state

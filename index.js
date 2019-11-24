@@ -3,6 +3,9 @@ const NODE_PORT = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 const authController = require('./src/controller/AuthController');
 const userController = require('./src/controller/UserController');
 const loginViewController = require('./src/controller/LoginViewController');
