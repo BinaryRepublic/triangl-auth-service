@@ -1,0 +1,12 @@
+{
+  "name": "triangl-auth-service",
+  "version": "1.0.0",
+  "dependencies": {
+    "bcrypt": "^3.0.7",
+    "csprng": "^0.1.2",
+    "express": "latest",
+    "js-base64": "^2.5.1",
+    "knex": "^0.20.2",
+    "mysql": "^2.17.1"
+  }
+}
