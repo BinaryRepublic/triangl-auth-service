@@ -2,12 +2,19 @@ const { throwMissingParam } = require('../support/ErrorHandler');
 
 class RequestTokenDto {
   constructor({
-    authorization_code,
+    grant_type,
+    code,
     code_verifier,
-    response_type
+    response_type,
+    refresh_token
   }) {
-    this.authorization_code = authorization_code || throwMissingParam('authorization_code');
-    this.code_verifier = code_verifier || throwMissingParam('code_verifier');
+    this.grant_type = grant_type || throwMissingParam('grant_type');
+    if (grant_type === 'authorization_code') {
+      this.code = code || throwMissingParam('code');
+      this.code_verifier = code_verifier || throwMissingParam('code_verifier');
+    } else if (grant_type === 'refresh_token') {
+      this.refresh_token = refresh_token || throwMissingParam('refresh_token');
+    }
     this.response_type = response_type || throwMissingParam('response_type');
   }
 }

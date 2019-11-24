@@ -6,6 +6,7 @@ const TABLES = {
 };
 
 module.exports = {
+  getUserById,
   createUser,
   getUserByEmail,
   storeAuthorizationCode,
@@ -19,6 +20,13 @@ async function createUser(email, password) {
     email,
     password
   })
+}
+
+async function getUserById(id) {
+  const users = await knex(TABLES.user)
+    .select('id', 'email')
+    .where('id', id);
+  return users[0] || null;
 }
 
 async function getUserByEmail(email) {

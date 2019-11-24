@@ -9,6 +9,7 @@ module.exports = {
   createAuthSession,
   setUserId,
   getPendingAuthSessionByUserId,
+  getAuthSessionByRefreshToken,
   saveTokens
 };
 
@@ -36,6 +37,14 @@ async function getPendingAuthSessionByUserId(user_id) {
   const authSession = await knex(TABLES.auth)
     .select('id', 'code_challenge', 'code_challenge_method', 'client_id', 'audience')
     .where('user_id', user_id)
+    .orderBy('created_at', 'desc');
+  return authSession[0] || null;
+}
+
+async function getAuthSessionByRefreshToken(refresh_token) {
+  const authSession = await knex(TABLES.auth)
+    .select('id', 'client_id', 'audience', 'user_id')
+    .where('refresh_token', refresh_token)
     .orderBy('created_at', 'desc');
   return authSession[0] || null;
 }

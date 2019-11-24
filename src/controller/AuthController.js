@@ -35,17 +35,26 @@ router.get('/authorize', withErrorHandler(async (req, res) => {
   ));
 }));
 
-router.get('/token', withErrorHandler(async (req, res) => {
-  const requestTokenDto = new RequestTokenDto(req.query);
+router.post('/token', withErrorHandler(async (req, res) => {
+  const requestTokenDto = new RequestTokenDto(req.body);
 
-  const user = await userService.getUserByAuthorizationCodeAndDropCode(requestTokenDto.authorization_code);
-  const tokens = await authService.checkCodeVerifierAndGenerateTokensForUser(
-    user,
-    requestTokenDto.code_verifier,
-    requestTokenDto.response_type
-  );
-
-  res.send(tokens);
+  switch (requestTokenDto.grant_type) {
+    case 'authorization_code':
+      const user = await userService.getUserByAuthorizationCodeAndDropCode(requestTokenDto.code);
+      const initialTokens = await authService.checkCodeVerifierAndGenerateTokensForUser(
+        user,
+        requestTokenDto.code_verifier,
+        requestTokenDto.response_type
+      );
+      res.send(initialTokens);
+    break;
+    case 'refresh_token':
+      const refreshedTokens = await authService.checkRefreshTokenAndGenerateTokensForUser(requestTokenDto.refresh_token, requestTokenDto.response_type);
+      res.send(refreshedTokens);
+    break;
+    default:
+      throw { statusCode: 400, message: 'grant_type not supported' }
+  }
 }));
 
 router.get('/.well-known/jwks.json', withErrorHandler((req, res) => {

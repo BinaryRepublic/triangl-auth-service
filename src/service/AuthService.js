@@ -4,6 +4,7 @@ const jsonwebtoken = require('jsonwebtoken');
 
 const authConfig = require('../config/AuthConfig');
 const authRepository = require('../repository/AuthRepository');
+const userRepository = require('../repository/UserRepository');
 
 module.exports = {
   validateResponseType,
@@ -12,7 +13,8 @@ module.exports = {
   createAuthSession,
   constructUserLoginRedirectUri,
   linkAuthSessionWithUser,
-  checkCodeVerifierAndGenerateTokensForUser
+  checkCodeVerifierAndGenerateTokensForUser,
+  checkRefreshTokenAndGenerateTokensForUser
 };
 
 const RESPONSE_TYPES = ['token id_token'];
@@ -53,11 +55,20 @@ function constructUserLoginRedirectUri(state, response_type, redirect_uri, sessi
 }
 
 async function checkCodeVerifierAndGenerateTokensForUser(user, code_verifier, response_type) {
-
   const authSession = await authRepository.getPendingAuthSessionByUserId(user.id);
   verifyCodeChallenge(authSession.code_challenge_method, authSession.code_challenge, code_verifier);
 
   return await generateFreshTokenResponseForUser(user, authSession, response_type)
+}
+
+async function checkRefreshTokenAndGenerateTokensForUser(refresh_token, response_type) {
+  const authSession = await authRepository.getAuthSessionByRefreshToken(refresh_token);
+  if (!authSession) {
+    throw { statusCode: 400, message: 'refresh_token is invalid' }
+  }
+  const user = await userRepository.getUserById(authSession.user_id);
+
+  return await generateFreshTokenResponseForUser(user, authSession, response_type);
 }
 
 async function generateFreshTokenResponseForUser(user, authSession, response_type) {
