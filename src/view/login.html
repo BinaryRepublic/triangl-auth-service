@@ -16,7 +16,7 @@
         const response_type = urlParams.get('response_type');
         const session_id = urlParams.get('session_id');
 
-        const response = await fetch('/user/login', {
+        const response = await fetch(`${window.location.pathname.replace('/login', '')}/user/login`, {
           method: 'POST',
           mode: 'cors',
           cache: 'no-cache',
@@ -45,14 +45,9 @@
     }
   </script>
   <style>
-    @font-face {
-      font-family: 'lato-regular';
-      src: url('/assets/fonts/Lato-Regular.ttf')
-    }
     body {
       margin: 0;
       padding: 0;
-      font-family: 'lato-regular', sans-serif;
       background-color: #eeeeee;
       display: flex;
       justify-content: center;

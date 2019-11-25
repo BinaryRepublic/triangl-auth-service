@@ -4,11 +4,16 @@ const authConfig = require('./src/config/AuthConfig');
 const express = require('express');
 const app = express();
 
-const cors = require('cors');
-const corsOptions = {
-  origin: authConfig.allowedCorsUrls.join(',')
-};
-app.use(cors(corsOptions));
+app.use(function(req, res, next) {
+  const origin = req.headers.origin;
+  if(authConfig.allowedCorsUrls.indexOf(origin) > -1){
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Credentials', true);
+  return next();
+});
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
