@@ -4,6 +4,15 @@ const authConfig = require('./src/config/AuthConfig');
 const express = require('express');
 const app = express();
 
+const { deepSanitize } = require('./src/support/XSSProtection');
+const mung = require('express-mung');
+app.use(mung.json(
+  function transform(body) {
+    deepSanitize(body);
+    return body;
+  }
+));
+
 app.use(function(req, res, next) {
   const origin = req.headers.origin;
   if(authConfig.allowedCorsUrls.indexOf(origin) > -1){

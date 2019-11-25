@@ -16,7 +16,8 @@ module.exports = {
   checkCodeVerifierAndGenerateTokensForUser,
   checkRefreshTokenAndGenerateTokensForUser,
   dropAccessTokenForUser,
-  dropRefreshTokenForUser
+  dropRefreshTokenForUser,
+  getUserIdByAccessToken
 };
 
 const RESPONSE_TYPES = ['token id_token'];
@@ -131,4 +132,12 @@ async function dropAccessTokenForUser(access_token) {
 
 async function dropRefreshTokenForUser(refresh_token) {
   await authRepository.dropRefreshToken(refresh_token);
+}
+
+async function getUserIdByAccessToken(access_token) {
+  const authSession = await authRepository.getAuthSessionByAccessToken(access_token);
+  if (!authSession) {
+    throw { statusCode: 401, message: 'not authenticated' }
+  }
+  return authSession.user_id;
 }

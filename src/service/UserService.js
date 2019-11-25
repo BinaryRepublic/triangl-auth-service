@@ -9,7 +9,8 @@ module.exports = {
   verifyUserCredentials,
   generateAndStoreAuthorizationCode,
   getUserByAuthorizationCodeAndDropCode,
-  constructAuthorizationCodeRedirectUri
+  constructAuthorizationCodeRedirectUri,
+  getUserById
 };
 
 async function registerUser(email, password) {
@@ -65,7 +66,7 @@ function verifyAuthorizationCode(authorizationCode) {
   const { expires } = authorizationCodeObj;
 
   if (expires < new Date().toISOString()) {
-    // TODO throw { statusCode: 400, message: 'authorization_code is expired' }
+    throw { statusCode: 400, message: 'authorization_code is expired' }
   }
 }
 
@@ -74,4 +75,8 @@ function constructAuthorizationCodeRedirectUri(redirect_uri, code, state, respon
     .replace('{code}', encodeURIComponent(code))
     .replace('{state}', encodeURIComponent(state))
     .replace('{response_type}', encodeURIComponent(response_type))
+}
+
+async function getUserById(id) {
+  return await userRepository.getUserById(id);
 }

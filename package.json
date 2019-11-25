@@ -6,6 +6,7 @@
     "body-parser": "latest",
     "csprng": "^0.1.2",
     "express": "latest",
+    "express-mung": "^0.5.1",
     "js-base64": "^2.5.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.2",

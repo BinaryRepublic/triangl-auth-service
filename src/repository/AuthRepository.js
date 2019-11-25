@@ -9,6 +9,7 @@ module.exports = {
   createAuthSession,
   setUserId,
   getPendingAuthSessionByUserId,
+  getAuthSessionByAccessToken,
   getAuthSessionByRefreshToken,
   saveTokens,
   dropAccessToken,
@@ -22,7 +23,8 @@ async function createAuthSession(code_challenge, code_challenge_method, audience
     code_challenge,
     code_challenge_method,
     audience,
-    client_id
+    client_id,
+    created_at: new Date().toISOString()
   });
   return id;
 }
@@ -39,6 +41,14 @@ async function getPendingAuthSessionByUserId(user_id) {
   const authSession = await knex(TABLES.auth)
     .select('id', 'code_challenge', 'code_challenge_method', 'client_id', 'audience')
     .where('user_id', user_id)
+    .orderBy('created_at', 'desc');
+  return authSession[0] || null;
+}
+
+async function getAuthSessionByAccessToken(access_token) {
+  const authSession = await knex(TABLES.auth)
+    .select('id', 'client_id', 'audience', 'user_id')
+    .where('access_token', access_token)
     .orderBy('created_at', 'desc');
   return authSession[0] || null;
 }

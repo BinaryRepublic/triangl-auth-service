@@ -18,7 +18,8 @@ async function createUser(email, password) {
   await knex(TABLES.user).insert({
     id: uuidv4(),
     email,
-    password
+    password,
+    created_at: new Date().toISOString()
   })
 }
 

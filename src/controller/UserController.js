@@ -35,4 +35,15 @@ router.post('/login', withErrorHandler(async (req, res) => {
   });
 }));
 
+router.get('/me', withErrorHandler(async (req, res) => {
+  const auth = req.header('Authorization');
+  if (!auth) {
+    throw { statusCode: 401, message: 'Authorization bearer missing' }
+  }
+  const access_token = auth
+    .replace(/bearer /ig, '');
+  const userId = await authService.getUserIdByAccessToken(access_token);
+  res.send(await userService.getUserById(userId))
+}));
+
 module.exports = router;
