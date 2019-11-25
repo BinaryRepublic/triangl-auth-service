@@ -1,7 +1,14 @@
 const NODE_PORT = process.env.PORT || 3000;
+const authConfig = require('./src/config/AuthConfig');
 
 const express = require('express');
 const app = express();
+
+const cors = require('cors');
+const corsOptions = {
+  origin: authConfig.allowedCorsUrls.join(',')
+};
+app.use(cors(corsOptions));
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());

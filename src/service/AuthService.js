@@ -14,7 +14,9 @@ module.exports = {
   constructUserLoginRedirectUri,
   linkAuthSessionWithUser,
   checkCodeVerifierAndGenerateTokensForUser,
-  checkRefreshTokenAndGenerateTokensForUser
+  checkRefreshTokenAndGenerateTokensForUser,
+  dropAccessTokenForUser,
+  dropRefreshTokenForUser
 };
 
 const RESPONSE_TYPES = ['token id_token'];
@@ -121,4 +123,12 @@ function verifyCodeChallenge(code_challenge_method, code_challenge, code_verifie
     return true;
   }
   throw { statusCode: 400, message: 'code_challenge_method not supported' };
+}
+
+async function dropAccessTokenForUser(access_token) {
+  await authRepository.dropAccessToken(access_token);
+}
+
+async function dropRefreshTokenForUser(refresh_token) {
+  await authRepository.dropRefreshToken(refresh_token);
 }

@@ -5,6 +5,7 @@ const { withErrorHandler } = require('../support/ErrorHandler');
 const authConfig = require('../config/AuthConfig');
 const AuthorizeDto = require('../dto/AuthorizeDto');
 const RequestTokenDto = require('../dto/RequestTokenDto');
+const RevokeTokenDto = require('../dto/RevokeTokenDto');
 const authService = require('../service/AuthService');
 const userService = require('../service/UserService');
 
@@ -55,6 +56,22 @@ router.post('/token', withErrorHandler(async (req, res) => {
     default:
       throw { statusCode: 400, message: 'grant_type not supported' }
   }
+}));
+
+router.post('/token/revoke', withErrorHandler(async (req, res) => {
+  const revokeTokenDto = new RevokeTokenDto(req.body);
+
+  switch (revokeTokenDto.token_type_hint) {
+    case 'access_token':
+      await authService.dropAccessTokenForUser(revokeTokenDto.token);
+    break;
+    case 'refresh_token':
+      await authService.dropRefreshTokenForUser(revokeTokenDto.token);
+    break;
+    default:
+      throw { statusCode: 400, message: 'token_type_hint not a valid token name' }
+  }
+  res.send()
 }));
 
 router.get('/.well-known/jwks.json', withErrorHandler((req, res) => {

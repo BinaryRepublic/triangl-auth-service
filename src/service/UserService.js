@@ -69,9 +69,9 @@ function verifyAuthorizationCode(authorizationCode) {
   }
 }
 
-function constructAuthorizationCodeRedirectUri(redirect_uri, authorization_code, state, response_type) {
-  return `${redirect_uri}?authorization_code={authorization_code}&state={state}&response_type={response_type}`
-    .replace('{authorization_code}', encodeURIComponent(authorization_code))
+function constructAuthorizationCodeRedirectUri(redirect_uri, code, state, response_type) {
+  return `${redirect_uri}?code={code}&state={state}&response_type={response_type}`
+    .replace('{code}', encodeURIComponent(code))
     .replace('{state}', encodeURIComponent(state))
     .replace('{response_type}', encodeURIComponent(response_type))
 }

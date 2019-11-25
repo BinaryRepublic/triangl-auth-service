@@ -10,7 +10,9 @@ module.exports = {
   setUserId,
   getPendingAuthSessionByUserId,
   getAuthSessionByRefreshToken,
-  saveTokens
+  saveTokens,
+  dropAccessToken,
+  dropRefreshToken
 };
 
 async function createAuthSession(code_challenge, code_challenge_method, audience, client_id) {
@@ -55,5 +57,20 @@ async function saveTokens(id, access_token, refresh_token) {
     .update({
       access_token,
       refresh_token
+    })
+}
+
+async function dropAccessToken(access_token) {
+  await knex(TABLES.auth)
+    .where('access_token', access_token)
+    .update({
+      access_token: null
+    })
+}
+async function dropRefreshToken(refresh_token) {
+  await knex(TABLES.auth)
+    .where('refresh_token', refresh_token)
+    .update({
+      refresh_token: null
     })
 }

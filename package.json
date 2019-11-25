@@ -4,6 +4,7 @@
   "dependencies": {
     "bcrypt": "^3.0.7",
     "body-parser": "latest",
+    "cors": "^2.8.5",
     "csprng": "^0.1.2",
     "express": "latest",
     "js-base64": "^2.5.1",

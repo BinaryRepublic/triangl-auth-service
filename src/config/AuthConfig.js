@@ -9,8 +9,9 @@ const jwtPublicKey = fs.readFileSync(`${jwtKeysPath}/${jwtPublicKeyName}`).toStr
 
 module.exports = {
   baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+  allowedCorsUrls: ['http://localhost:8080'],
   allowedRedirectUris: {
-    TRIANGL_WEB_APP: ['http://localhost:8080/callback', 'http://localhost:8081/callback']
+    TRIANGL_WEB_APP: ['http://localhost:8080/callback']
   },
   allowedAudiences: {
     TRIANGL_WEB_APP: ['https://api.triangl.io/dashboard-service']
