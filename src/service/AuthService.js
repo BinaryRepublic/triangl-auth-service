@@ -75,6 +75,7 @@ async function checkRefreshTokenAndGenerateTokensForUser(refresh_token, response
 }
 
 async function generateFreshTokenResponseForUser(user, authSession, response_type) {
+  const algorithm = 'RS256';
   const access_token = jsonwebtoken.sign(
     {
       user_id: user.id
@@ -83,10 +84,11 @@ async function generateFreshTokenResponseForUser(user, authSession, response_typ
     {
       issuer: authConfig.baseUrl,
       expiresIn: authConfig.jwtLiveSpanInSec,
-      audience: authSession.audience
+      audience: authSession.audience,
+      algorithm
     }
   );
-  const refresh_token = jsonwebtoken.sign({}, authConfig.jwtPrivateKey, { expiresIn: authConfig.jwtRefreshLiveSpanInSec });
+  const refresh_token = jsonwebtoken.sign({}, authConfig.jwtPrivateKey, { expiresIn: authConfig.jwtRefreshLiveSpanInSec, algorithm });
   const id_token = jsonwebtoken.sign(
     {
       user_id: user.id,
@@ -97,7 +99,8 @@ async function generateFreshTokenResponseForUser(user, authSession, response_typ
       issuer: authConfig.baseUrl,
       subject: user.id,
       audience: authSession.client_id,
-      expiresIn: authConfig.jwtLiveSpanInSec
+      expiresIn: authConfig.jwtLiveSpanInSec,
+      algorithm
     }
   );
 
