@@ -3,29 +3,28 @@ This README contains an overview of all applied tools, methods and implementatio
 
 # Introduction
 
-Triangl was my CODE project in WS-2018 and our goal was, to enable anonymous tracking of smartphones for shopping malls, stores or airports. Essentially we placed multiple WIFI access-points in a room, which were connected in a mesh-network and were running OpenWrt. When deployed they are listening for Probe requests sending these information to the back-end. If 3 or more access-point received a request for the same device, our back-end service calculates the position of the device based on signal-strength and time-of-flight utilising lateration.
+Triangl was my CODE project in WS-2018 and our goal was, to enable anonymous tracking of smartphones for shopping malls, stores or airports. Concretely, we placed multiple WIFI access-points in a room, which were connected in a mesh-network and were running OpenWrt. When deployed they are listening for Probe requests sending this information to the back-end. If 3 or more access-point receive a request from the same device, our back-end service calculates the position of the device based on signal-strength and time-of-flight utilizing lateration.
 
-The computed tracking points are ingested into our ingestion-db and pushed into the stream (processing-pipeline). This stream will convert the data to a better queryable format and write it into the analyzing-db. The dasboard-service will provide data from this database to the front-end dashboard which our customers can use to see the analyzed data.
+The computed tracking points are ingested into our ingestion-db and pushed into the stream (processing-pipeline). This stream will convert the data to a better queryable format and write it into the analyzing-db. The dashboard-service will provide data from this database to the front-end dashboard which our customers can use to see the analyzed data.
 
-Architectural overview: https://github.com/binaryrepublic/triangl-infrastructure#overview
+Architectural overview: [https://github.com/binaryrepublic/triangl-infrastructure#overview](https://github.com/binaryrepublic/triangl-infrastructure#overview)
 
 # Threat modelling
 
-Before implementing anything I tried to identify all attack-vectors and possible breaches on the system and ordered them by impact. I started with some high level threats that affect the system as a whole and then inspected the exposed individual services and how they are communicating with external parties.
+Before implementing anything I tried to identify all attack-vectors and possible breaches on the system and ordered them by the impact. I started with some high-level threats that affect the system as a whole and then inspected the exposed individual services and how they are communicating with external parties:
 
-
-![https://docs.google.com/spreadsheets/d/1fIfY2WRt9oqGJeTKbFam0jGgOWzbKQsCjRGXjBpu1pc/edit](https://paper-attachments.dropbox.com/s_87694F67A00214CD69671856369A7A49A2F5C2DC1DC7854A55301A0929A56714_1574763922982_Screenshot+2019-11-26+at+11.25.08.png)
-
+[PDF: Threat modelling](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/docs/threat-modelling.pdf)
 
 Based on this I’d like to elaborate a little more on my architectural decisions and the implemented solutions below.
 
 # Applied architectural concepts
 ## Principle of least privilege
 
-One of the advantages of our micro-service architecture is the possibility to restrict access on a service level. Even though all cluster applications are within the same network I created setup access rights on two different levels:
+One of the advantages of our micro-service architecture is the possibility to restrict access on a service level. Even though all cluster applications are within the same network, I set-up access rights on two different levels:
 
 1. Each service has a specific GCP [service account assigned](https://github.com/BinaryRepublic/triangl-infrastructure/blob/master/terraform/gcp-service-accounts.tf), that allows it access to specific resources [using IAM bindings.](https://github.com/BinaryRepublic/triangl-infrastructure/blob/master/terraform/gcp-iam-bindings.tf)
-2. Each service that accesses a SQL database uses an [individual database user](https://github.com/BinaryRepublic/triangl-infrastructure/blob/master/terraform/gcp-sql-database.tf), so that activity can be audited and access can be restricted as well.
+2. Each service that accesses a SQL database uses an [individual database user](https://github.com/BinaryRepublic/triangl-infrastructure/blob/master/terraform/gcp-sql-database.tf), so that activity can be audited and access can be restricted as well:
+
 | **service**                | **granted database access**  | **granted index/table access**                                        |
 | -------------------------- | ---------------------------- | --------------------------------------------------------------------- |
 | tracking-ingestion-service | GCP Datastore                | r/w TrackingPoint ; r Customer                                        |
@@ -41,7 +40,7 @@ Also, by default each deployed service is completely sandboxed. It cannot reach 
 
 ## IP white-listing
 
-To further mitigate the risk of breaching authentication of publicly exposed endpoints, I tried to restrict access based on source IP address. Here is an overview of endpoints that can be restricted:
+To further mitigate the risk of breaching authentication of publicly exposed endpoints, I tried to restrict access based on source IP address. Here is an overview of endpoints that are restricted:
 
 | **endpoint**                                      | **restricted audience**                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -51,7 +50,7 @@ To further mitigate the risk of breaching authentication of publicly exposed end
 
 ## Auditing and monitoring
 
-For error tracking and alerting I implemented Sentry ([example](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/build.gradle#L74)) so we can quickly respond to application failures or unexpected behaviour. Also I [added a Datadog agent](https://github.com/BinaryRepublic/triangl-infrastructure/tree/master/kubernetes/datadog) which is running on each Kubernetes node and which sends metrics about health status and running pods. In case any node dies or any pod is running into a restart loop we can simply setup alerts to get notified. This enables us to also send custom metrics (e.g. about tracking-ingestion events) in the future. Thresholds can be configured, to detect unusual ingestion behaviour and we could get notified.
+For error tracking and alerting I implemented Sentry ([example](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/build.gradle#L74)) so we can quickly respond to application failures or unexpected behaviour. Also, I [added a Datadog agent](https://github.com/BinaryRepublic/triangl-infrastructure/tree/master/kubernetes/datadog) which is running on each Kubernetes node and which sends metrics about health status and running pods. In case any node dies or any pod is running into a restart loop we can simply setup alerts to get notified. This enables us to also send custom metrics (e.g. about tracking-ingestion events) in the future. Thresholds can be configured, to detect unusual ingestion behaviour and we could get notified.
 
 As we run on Google Cloud the most reasonable solution for proper database auditing is https://cloud.google.com/audit-logs/. However, I’m well aware of the possibility to configure this by myself. MySQL databases (as we use) provide [audit logging features](https://dev.mysql.com/doc/refman/5.7/en/audit-log-logging-configuration.html) that writes logs into files. These files could be written on mounted volumes, to ensure their durability even if the DBMS/DB container is failing.
 
@@ -66,7 +65,7 @@ For big database incidents, I tried to set-up some basic plans on how to recover
 
 ## Secret handling
 
-Currently database and Google service account secrets are stored as Kubernetes secrets inside the cluster. The biggest threat I see could be an attacker that gains somehow access to the Kubernetes API. This way all secrets could be leaked. As I protected the API with IP whitelisting and the default .kubeconfig authentication, I do not think the risk of an attacker gaining access is to big, which is why I did not focus on this.
+Currently database and Google service account secrets are stored as Kubernetes secrets inside the cluster. The biggest threat I see could be an attacker that gains somehow access to the Kubernetes API. This way all secrets could be leaked. As I protected the API with IP whitelisting and the default .kubeconfig authentication, I do not think the risk of an attacker gaining access is too big, which is why I did not focus on this.
 However, to protect against leaking secrets through the Kubernetes API we could store the secrets in an external Vault, that has sophisticated access-control management. (e.g. [Hashicorp Vault](https://www.vaultproject.io/))
 
 # Application security implementations
@@ -77,11 +76,11 @@ After looking for a proper OAuth2 grant type I ended up with 2 options:
 - Implicit Grant
 - Authorization Code Grant with PKSE
 
-Until recent times **Implicit Grant** was the way to go for SPA, because it was considered as a sufficient option to securely request an access-token by sending user credentials. However, since the requested tokens are being returned in the redirect URL, there are different attack vectors:
+Until recent times **Implicit Grant** was the way to go for SPA, because it was considered as a sufficient option to securely request an access-token by sending user credentials. However, since the requested tokens are being returned in the redirect URL, there are multiple attack vectors:
 
 - redirects can be intercepted (man-in-the-middle, even with HTTPS when using corporate SSL certificates to inspect traffic)
-- reading them from the browser history
-- accessing them via third-party libraries
+- redirects can be read from the browser history
+- redirects can be accessed via third-party libraries
 
 → **Authorization Code Flow with PKSE** does not involve any access_token’s in the redirect URL. Instead the redirect URL contains an authorization grant, that can be used to receive an access_token after the redirect. **PKSE** stands for **Proof Key for Code Exchange** and adds another layer of security, since the default **Authorization Code Flow** requires the client_secret which cannot be stored securely in the browser. Instead of the client_secret the verification is based on a **code_challenge** and a **code_verifier**, that is generated by the client and unguessable by an attacker.
 
@@ -99,11 +98,11 @@ Until recent times **Implicit Grant** was the way to go for SPA, because it was 
 
 ## Token generation and usage
 
-Since I am following the OIDC standard, access_token, refresh_token and id_token are **JWT** tokens. To sign and later verify them I use asynchronous encryption (RS256) involving a private and public key (RSA key pair). Both keys are injected into the auth-service as environment variables, such that they are not laying in the source code which would be a huge security threat. During [token generation](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/src/service/AuthService.js#L79) the private key is used to encrypt the tokens signature. Later when the client sends a request to any **resource server** (like dashboard-service) the token signature can be verified using the public key which is exposed on [/auth-service/auth/.well-known/jwks.json](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/src/controller/AuthController.js#L77). To do this, the customer service is [fetching the public key from the auth-service on start-up.](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L28)
+Since I am following the OIDC standard, access_token, refresh_token and id_token are **JWT** tokens. To sign and later verify them I use asynchronous encryption (RS256) involving a private and public key (RSA key pair). Both keys are injected into the auth-service as environment variables, such that they are not laying in the source code which would be a huge security threat. During [token generation](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/src/service/AuthService.js#L79) the private key is used to encrypt the tokens signature. Later when the client sends a request to any **resource server** (like dashboard-service) the token signature can be verified using the public key which is exposed on [GET /auth-service/auth/.well-known/jwks.json](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/src/controller/AuthController.js#L77). To do this, the dashboard-service is [fetching the public key from the auth-service on start-up.](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L28)
 
 ## Authorization
 
-In order to only allow a user access to the respective customers data, I the customer table contains a **userId** column. This is used to assign a user to a customer. When the dashboard-service parses and validates the JWT access_token it also [checks the containing user_id](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L44). Later when loading customer data from the database only data [for the customer of the SecurityContext is queried.](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/services/VisitorService.kt#L20) There are no roles/authorities implemented yet. However this could easily be added by [setting the SecurityContext (third argument).](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L47)
+In order to only allow a user access to the respective customers data, the customer table contains a **userId** column. This is used to assign a user to a customer. When the dashboard-service parses and validates the JWT access_token it also [checks the containing user_id](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L44). Later when loading customer data from the database only data [for the customer of the SecurityContext is queried.](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/services/VisitorService.kt#L20) There are no roles/authorities implemented yet. However this could easily be added by [setting the SecurityContext (third argument).](https://github.com/BinaryRepublic/triangl-dashboard-service/blob/master/src/main/kotlin/com/triangl/dashboard/support/JwtTokenProvider.kt#L47)
 
 
 ## Password hashing
@@ -137,7 +136,7 @@ Also VueJS is pretty save, as long as the whole page is rendered on client-side 
 There are several steps I took to protect against CSFR attacks.
 
 1. [When initialising the authentication flow the web-app generates a random](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L60) [**state**](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L60) that is unguessable by an attacker. This **state** is part of the before mentioned authorisation request (step 2) to the auth-service. After the user logged in and before the **code** and the **code_verifier** is being exchanged with the tokens (step 7), this previously generated **state** is being compared against the **state** from the **redirect_uri.** Only if both match the request token is requested. (The code_challenge and the code_verifier **cannot** protect against CSFR as they are being compared server-side.)
-2. All requests towards back-end resource servers need to contain an **Authorization Header** containing a valid JWT access_token. As CSFR attacks cannot set custom headers using a websites cookies or local storage, they are ineffective for any request to the back-end that involves authentication.
+2. All requests towards back-end resource servers need to contain an **Authorization Header** containing a valid JWT access_token. As CSFR attacks cannot set custom headers from local storage, they are ineffective for any request to the back-end that involves authentication. This is why I did not implement any CSRF token, but in case new state-changing endpoints would be added in the back-end that do not require authentication, it should be surely added.
 ## CORS policy
 
 Our domain setup looks like this:
@@ -148,6 +147,12 @@ Our domain setup looks like this:
 | api.triangl.io | Domain for accessing back-end services, concretely accessible for web-app are:<br><br>- auth-service<br>- dashboard-service |
 
 This is why I [set up the](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/index.js#L19) [**Access-Control-Allow-Origin**](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/index.js#L19) [header](https://github.com/BinaryRepublic/triangl-auth-service/blob/master/index.js#L19) to “https://api.triangl.io”. Even though we don’t use cookie session based authentication this just adds another layer of security against cross-site attacks.
+
+# Self assessment
+
+After researching about all the mentioned different attack-vectors and reasoning about solutions to prevent these, I feel that I have a solid basic understanding about the topic. Also I gained some working experience with JWT tokens and authorities throughout the last years. Originally we were using Auth0 as a managed authentication service. After implementing the OIDC Authorization Grant Flow with PKSE by myself, I got a deeper understanding of all the involved challenges to make user accounts and authentication secure. Also I gained some knowledge and practical experience with password hashing, CSFR prevention and other techniques as described above. I think all of this will help me in the future, even when using managed SaaS solutions, because knowing the underlaying layers and concepts helps to integrate them in a proper way.
+
+After all I would assess myself at a solid Level 1.
 
 # Learning Resources
 ## Conducting a security audit
@@ -203,4 +208,7 @@ https://www.geekwire.com/2018/memcached-servers-used-launch-record-setting-ddos-
 ## Penetration Testing
 https://www.imperva.com/learn/application-security/penetration-testing/
 
+## CSRF
+
+https://docs.spring.io/spring-security/site/docs/3.2.0.CI-SNAPSHOT/reference/html/csrf.html
 
