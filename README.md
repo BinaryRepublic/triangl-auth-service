@@ -95,6 +95,7 @@ Until recent times **Implicit Grant** was the way to go for SPA, because it was 
 7. [user is redirected to client and requests the tokens by the](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86) [**code**](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86) [from the](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86) [**redirect_uri**](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86) [and the previously stored](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86) [**code_verifier**](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L86)
 8. [client receives the tokens and stores them in local-storage](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L92)
 ![src: https://christianlydemann.com/implicit-flow-vs-code-flow-with-pkce/](https://i1.wp.com/christianlydemann.com/wp-content/uploads/2018/05/oidc-code-flow-pkce-1.png?resize=791%2C618&ssl=1)
+src: https://christianlydemann.com/implicit-flow-vs-code-flow-with-pkce/
 
 ## Token generation and usage
 
