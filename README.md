@@ -63,6 +63,9 @@ For big database incidents, I tried to set-up some basic plans on how to recover
 | serving-db compromised and dropped or modified   | - detect db-user that executed operation (audit-trails), **delete user**<br>- trigger re-ingestion from ingestion database<br>- scale up ingestion-pipeline to accelerate re-ingestion<br>- inspect attack-vector and eliminate cause → was data leaked? |
 | ingestion-db compromised and dropped or modified | - detect db-userthat executed operation (audit-trails), **revoke user access**<br>- recreate database from last successful snapshot<br>- inspect attack-vector and eliminate cause → was data leaked?                                                    |
 
+- Recovery Point Objective: 2h (ingestion_db automated backups)
+- Recovery Time Objective: 2h (reindexing from ingestion_db)
+
 ## Secret handling
 
 Currently database and Google service account secrets are stored as Kubernetes secrets inside the cluster. The biggest threat I see could be an attacker that gains somehow access to the Kubernetes API. This way all secrets could be leaked. As I protected the API with IP whitelisting and the default .kubeconfig authentication, I do not think the risk of an attacker gaining access is too big, which is why I did not focus on this.
