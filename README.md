@@ -113,8 +113,8 @@ In order to only allow a user access to the respective customers data, the custo
 
 For password hashing I used **bcrypt** which involves different aspects to make the hash secure:
 
-- Random **Salt** is generated and added to the hash, so that Rainbow lookup tables cannot work (hashes are different, even if two users have the same password)
-- Since look-up tables cannot be prevented by adding **Salt**, **bcrypt** adds another technique called **key stretching.** The hash-function becomes computational more expensive, so that testing look-up tables or brute-forcing takes very long.
+- Random **Salt** is generated and added to the hash, so that Rainbow and lookup tables cannot work
+- Since dictionary or brute-force attacks on each hash individually cannot be prevented by adding **Salt**, **bcrypt** adds another technique called **key stretching.** The hash-function becomes computational more expensive, so that testing look-up tables or brute-forcing takes very long.
 
 I also read about the concept of **Pepper**, but I did not implement it due to the following downsides:
 
