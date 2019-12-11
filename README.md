@@ -132,9 +132,9 @@ In order to mitigate the risk of XSS attacks [I implemented some basic character
 
 Also VueJS is pretty save, as long as the whole page is rendered on client-side and as long as the **v-html** directive is not being used. Right now we always use the Mustache syntax (e.g. [{{email}}](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/components/shared/Auth/Auth.vue#L3)), which does not execute any scripts or expressions. Unfortunately many libraries still use v-html which is why back-end sanitizing is still necessary.
 
-## CSFR protection
+## CSRF protection
 
-There are several steps I took to protect against CSFR attacks.
+There are several steps I took to protect against CSRF attacks.
 
 1. [When initialising the authentication flow the web-app generates a random](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L60) [**state**](https://github.com/BinaryRepublic/triangl-dashboard/blob/develop/src/controllers/AuthController.js#L60) that is unguessable by an attacker. This **state** is part of the before mentioned authorisation request (step 2) to the auth-service. After the user logged in and before the **code** and the **code_verifier** is being exchanged with the tokens (step 7), this previously generated **state** is being compared against the **state** from the **redirect_uri.** Only if both match the request token is requested. (The code_challenge and the code_verifier **cannot** protect against CSFR as they are being compared server-side.)
 2. All requests towards back-end resource servers need to contain an **Authorization Header** containing a valid JWT access_token. As CSFR attacks cannot set custom headers from local storage, they are ineffective for any request to the back-end that involves authentication. This is why I did not implement any CSRF token, but in case new state-changing endpoints would be added in the back-end that do not require authentication, it should be surely added.
