@@ -2,7 +2,7 @@
   "name": "triangl-auth-service",
   "version": "1.0.0",
   "dependencies": {
-    "bcrypt": "^3.0.7",
+    "bcrypt": "^5.0.0",
     "body-parser": "latest",
     "csprng": "^0.1.2",
     "express": "latest",
